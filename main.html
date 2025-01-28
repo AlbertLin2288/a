@@ -1,0 +1,23 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>title</title>
+    <style>
+        /* iframe {
+            width: fit-content;
+            height: fit-content;
+        } */
+    </style>
+</head>
+<body>
+    <iframe src="SN2_1.html"></iframe>
+    <script>
+        window.onload = () => {
+            for (let i of document.getElementsByTagName("iframe")){
+                i.width = i.contentWindow.document.body.scrollWidth;
+                i.height = i.contentWindow.document.body.scrollHeight;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style src="iframe.css"></style>
+</head>
+<body>
+    <svg viewBox="0 0 256 256" height="256" width="256">
+        <circle id="c1" cx="128" cy="128" r="10"/>
+    </svg>
+    <button onclick="reset();"></button>
+    <script>
+        async function reset(){
+            document.getElementById("c1").r = 20;
+            setTimeout(()=>{
+                document.getElementById("c1").r = 10;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
