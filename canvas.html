@@ -1,0 +1,68 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        body {
+            overflow: hidden;
+            width: fit-content;
+            height: fit-content;
+        }
+
+        #main {
+            width: fit-content;
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #btn_div {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #my_canvas {
+            width: 256px;
+            height: 256px;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <canvas id="my_canvas" width="256" height="256"></canvas>
+        <div id="btn_div">
+            <button onclick="main.reset();">reset</button>
+        </div>
+    </div>
+    <script defer>
+        async function init_frame(w, h) {
+            w = Number(w); h = Number(h);
+
+            let canvas = document.getElementById("my_canvas")
+            canvas.width = canvas.style.width = w * 0.9;
+            canvas.height = canvas.style.height = h * 0.85;
+            return {w:document.body.scrollWidth, h:document.body.scrollHeight};
+        }
+
+        function set_script(s){
+            let se = document.createElement("script");
+            se.src = s;
+            document.body.appendChild(se);
+            return new Promise((resolve) => {
+                se.onload = () => {
+                    main.start();
+                    resolve();
+                };
+            });
+        }
+    </script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+        integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+        crossorigin="anonymous"
+        defer>
+    </script>
+    <script src="func1.js" defer></script>
+</body>
+</html>
