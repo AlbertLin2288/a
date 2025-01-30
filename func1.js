@@ -8,13 +8,25 @@ class Scene {
      * @param {WebGLRenderingContext} gl gl
      * @param {Array<obj_3d>} objs objects to draw
      */
-    constructor(gl, objs = []){
+    constructor(gl, objs = [], background = [1, 1, 1, 1], init_z = 6){
         this.gl = gl;
         this.objs = objs;
+        this.background  = background;
+        this.init_z = init_z;
         this.init_gl();
-        this.paused = false;
 
-        this.reset();
+        document.addEventListener("keydown", (e) => {
+            if (e.code == "Equal"){
+                // +
+                this.mul = Math.min(this.mul+0.3,3);
+            }
+            if (e.code == "Minus"){
+                // -
+                this.mul = Math.max(this.mul-0.3,-3);
+            }
+        });
+
+        this.restart();
     }
 
     /**
@@ -39,7 +51,7 @@ class Scene {
         let gl = this.gl
 
         // Set clear color to white
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
+        gl.clearColor(...this.background);
         // Clear the color buffer with specified clear color
         gl.clear(gl.COLOR_BUFFER_BIT);
         
@@ -155,11 +167,19 @@ class Scene {
     /**
      * init/reset animation and viewpoint
      */
+    restart(){
+        this.reset();
+        this.total_t = 0;
+    }
+
+    /**
+     * init/reset viewpoint
+     */
     reset(){
         const fieldOfView = (45 * Math.PI) / 180; // in radians
         const aspect = this.gl.canvas.clientWidth / this.gl.canvas.clientHeight;
         const zNear = 0.1;
-        const zFar = 100.0;
+        const zFar = Infinity;
 
         this.projectionMatrix = mat4.create();
         mat4.perspective(this.projectionMatrix, fieldOfView, aspect, zNear, zFar);
@@ -169,20 +189,10 @@ class Scene {
         mat4.translate(
             this.transMatrix, // destination matrix
             this.transMatrix, // matrix to translate
-            [-0.0, 0.0, -6.0]
+            [-0.0, 0.0, -this.init_z]
         );
         this.mul = 0.0;
-        document.addEventListener("keydown", (e) => {
-            if (e.code == "Equal"){
-                // +
-                this.mul = Math.min(this.mul+0.3,3);
-            }
-            if (e.code == "Minus"){
-                // -
-                this.mul = Math.max(this.mul-0.3,-3);
-            }
-        });
-        this.total_t = 0;
+        this.paused = true;
     }
 
     /**
@@ -192,7 +202,7 @@ class Scene {
      */
     update_viewpoint(delta_t) {
         // viewing
-        let rot_vel = 0.2, tran_vel = 0.2
+        let rot_vel = 0.05, tran_vel = 0.2
         rot_vel *= Math.exp(this.mul);
         tran_vel *= Math.exp(this.mul);
         // Move the view matrix base on key
@@ -301,7 +311,7 @@ class Scene {
         let delta_t = Math.max(0.2, this.delta_t / 1000);
         this.update_viewpoint(delta_t);
 
-        gl.clearColor(1.0, 1.0, 1.0, 1.0); // Clear to white, fully opaque
+        gl.clearColor(...this.background); // Clear to white, fully opaque
         gl.clearDepth(1.0); // Clear everything
         gl.enable(gl.DEPTH_TEST); // Enable depth testing
         gl.depthFunc(gl.LEQUAL); // Near things obscure far things
