@@ -12,6 +12,7 @@ class Scene {
         this.gl = gl;
         this.objs = objs;
         this.init_gl();
+        this.paused = false;
 
         this.reset();
     }
@@ -110,7 +111,7 @@ class Scene {
     }
 
     start_loop(){
-        this.paused = false;
+        this.stoped = false;
         requestAnimationFrame((t) => {
             this.last_t = t;
             requestAnimationFrame(this.loop);
@@ -118,11 +119,13 @@ class Scene {
     }
 
     loop = (now) => {
-        if (this.paused){
+        if (this.stoped){
             return;
         }
         this.delta_t = now - this.last_t;
-        this.total_t += this.delta_t;
+        if (!this.paused){
+            this.total_t += this.delta_t;
+        }
         this.last_t = now;
         this.drawScene();
         requestAnimationFrame(this.loop);
@@ -131,15 +134,22 @@ class Scene {
     /**
      * pause
      */
-    pause() {
-        this.paused = true;
+    stop() {
+        this.stoped = true;
     }
 
     /**
      * unpause
      */
-    unpause() {
+    start() {
         this.start_loop();
+    }
+
+    /**
+     * toggle pause
+     */
+    toggle_pause() {
+        this.paused = !(this.paused);
     }
 
     /**
@@ -219,6 +229,22 @@ class Scene {
                     temp_mat,
                     Math.PI * rot_vel * delta_t,
                     [0,1,0]
+                )
+            }
+            if (window.pressedKeys["KeyC"]){
+                mat4.rotate(
+                    temp_mat,
+                    temp_mat,
+                    -Math.PI * rot_vel * delta_t,
+                    [0,0,1]
+                )
+            }
+            if (window.pressedKeys["KeyZ"]){
+                mat4.rotate(
+                    temp_mat,
+                    temp_mat,
+                    Math.PI * rot_vel * delta_t,
+                    [0,0,1]
                 )
             }
         } else {

@@ -14,5 +14,5 @@ function main(){
         return tm1;
     }));
     scene.reset();
-    scene.unpause();
+    scene.start();
 }
