@@ -43,10 +43,10 @@
                 return;
             }
             elms[cur].style.display = "none";
-            elms[cur].contentWindow.main.paused = true;
+            elms[cur].contentWindow.scene.pause();
             elms[i].style.display = "block";
             elms[i].focus();
-            elms[i].contentWindow.main.start_loop();
+            elms[i].contentWindow.scene.unpause();
             cur = i;
         }
 
@@ -59,7 +59,7 @@
         }
 
         window.onload = () => {
-            let main = document.getElementById("main");
+            let main_div = document.getElementById("main");
             let done_prom = [];
             for (let i in models){
                 let model = models[i];
@@ -67,7 +67,7 @@
                 frame.src = "canvas.html";
                 frame.id = "elm_" + model;
                 frame.classList.add("my_iframe");
-                main.appendChild(frame);
+                main_div.appendChild(frame);
                 elms.push(frame);
                 frame.addEventListener("load", () => {
                     frame.contentWindow.init_frame(
@@ -79,7 +79,7 @@
                         frame.contentWindow.set_script(model + ".js").then((res) => {
                             if (i != cur){
                                 frame.style.display = "none";
-                                frame.contentWindow.main.paused = true;
+                                frame.contentWindow.scene.pause();
                             } else {
                                 frame.focus()
                             }

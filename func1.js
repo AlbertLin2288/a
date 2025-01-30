@@ -2,32 +2,152 @@ window.pressedKeys = {};
 window.onkeyup = (e) => {window.pressedKeys[e.code] = false;};
 window.onkeydown = (e) => {window.pressedKeys[e.code] = true;};
 
-class obj_3d {
-    /**
-     * faces are list of triangle  
-     * colors are for faces  
-     * @param {Array} vertex 
-     * @param {Array} faces 
-     * @param {Array} colors
-     */
-    constructor(vertex, faces, colors) {
-        this.vertex = vertex;
-        this.faces = faces;
-        this.color = colors
-    }
-}
 
 class Scene {
-    constructor(canvas){
-        this.canvas = canvas;
-        this.gl = canvas.getContext("webgl");
+    /**
+     * @param {WebGLRenderingContext} gl gl
+     * @param {Array<obj_3d>} objs objects to draw
+     */
+    constructor(gl, objs = []){
+        this.gl = gl;
+        this.objs = objs;
+        this.init_gl();
 
         this.reset();
     }
 
+    /**
+     * add an obj to the scene
+     * @param {obj_3d} obj 
+     */
+    add_obj(obj){
+        this.objs.push(obj);
+    }
+
+    /**
+     * init gl related stuff
+     */
+    init_gl(){
+        // Only continue if WebGL is available and working
+        if (this.gl === null) {
+            alert(
+                "Unable to initialize WebGL. Your browser or machine may not support it."
+            );
+            return;
+        }
+        let gl = this.gl
+
+        // Set clear color to white
+        gl.clearColor(1.0, 1.0, 1.0, 1.0);
+        // Clear the color buffer with specified clear color
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        
+        
+        // Vertex shader program
+        
+        const vsSource = `
+            attribute vec4 aVertexPosition;
+            attribute vec4 aVertexColor;
+
+            uniform mat4 uObjectMatrix;
+            uniform mat4 uModelViewMatrix;
+            uniform mat4 uProjectionMatrix;
+
+            varying lowp vec4 vColor;
+
+            void main(void) {
+                gl_Position = uProjectionMatrix * uModelViewMatrix *\
+                    uObjectMatrix * aVertexPosition;
+                vColor = aVertexColor;
+            }
+        `;
+
+        // Fragment shader program
+
+        const fsSource = `
+            varying lowp vec4 vColor;
+        
+            void main(void) {
+            gl_FragColor = vColor;
+            }
+        `;
+
+        // Initialize a shader program; this is where all the lighting
+        // for the vertices and so forth is established.
+        const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+
+        // Collect all the info needed to use the shader program.
+        // Look up which attributes our shader program is using
+        // for aVertexPosition, aVertexColor and also
+        // look up uniform locations.
+        this.programInfo = {
+            program: shaderProgram,
+            attribLocations: {
+                vertexPosition: gl.getAttribLocation(
+                    shaderProgram,
+                    "aVertexPosition"
+                ),
+                vertexColor: gl.getAttribLocation(
+                    shaderProgram,
+                    "aVertexColor"
+                )
+            },
+            uniformLocations: {
+                projectionMatrix: gl.getUniformLocation(
+                    shaderProgram,
+                    "uProjectionMatrix"
+                ),
+                modelViewMatrix: gl.getUniformLocation(
+                    shaderProgram,
+                    "uModelViewMatrix"
+                ),
+                objectMatrix: gl.getUniformLocation(
+                    shaderProgram,
+                    "uObjectMatrix"
+                )
+            }
+        };
+    }
+
+    start_loop(){
+        this.paused = false;
+        requestAnimationFrame((t) => {
+            this.last_t = t;
+            requestAnimationFrame(this.loop);
+        });
+    }
+
+    loop = (now) => {
+        if (this.paused){
+            return;
+        }
+        this.delta_t = now - this.last_t;
+        this.total_t += this.delta_t;
+        this.last_t = now;
+        this.drawScene();
+        requestAnimationFrame(this.loop);
+    }
+
+    /**
+     * pause
+     */
+    pause() {
+        this.paused = true;
+    }
+
+    /**
+     * unpause
+     */
+    unpause() {
+        this.start_loop();
+    }
+
+    /**
+     * init/reset animation and viewpoint
+     */
     reset(){
         const fieldOfView = (45 * Math.PI) / 180; // in radians
-        const aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+        const aspect = this.gl.canvas.clientWidth / this.gl.canvas.clientHeight;
         const zNear = 0.1;
         const zFar = 100.0;
 
@@ -35,6 +155,7 @@ class Scene {
         mat4.perspective(this.projectionMatrix, fieldOfView, aspect, zNear, zFar);
         this.rotMatrix = mat4.create();
         this.transMatrix = mat4.create();
+        this.modelViewMatrix = mat4.create();
         mat4.translate(
             this.transMatrix, // destination matrix
             this.transMatrix, // matrix to translate
@@ -51,23 +172,16 @@ class Scene {
                 this.mul = Math.max(this.mul-0.3,-3);
             }
         });
+        this.total_t = 0;
     }
 
-    drawScene(programInfo, buffers, delta_t){
-        let gl = this.gl;
-        delta_t = Math.max(0.2, delta_t / 1000);
-
-        gl.clearColor(1.0, 1.0, 1.0, 1.0); // Clear to white, fully opaque
-        gl.clearDepth(1.0); // Clear everything
-        gl.enable(gl.DEPTH_TEST); // Enable depth testing
-        gl.depthFunc(gl.LEQUAL); // Near things obscure far things
-    
-        // Clear the canvas before we start drawing on it.
-    
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-
-
+    /**
+     * update viewpoint
+     * @param {Number} delta_t time since last check
+     * @returns Translation matrix
+     */
+    update_viewpoint(delta_t) {
+        // viewing
         let rot_vel = 0.2, tran_vel = 0.2
         rot_vel *= Math.exp(this.mul);
         tran_vel *= Math.exp(this.mul);
@@ -137,39 +251,75 @@ class Scene {
                     [tran_vel * delta_t,0,0]
                 )
             }
+            if (window.pressedKeys["KeyC"]){
+                mat4.translate(
+                    this.transMatrix,
+                    this.transMatrix,
+                    [0,0,tran_vel * delta_t]
+                )
+            }
+            if (window.pressedKeys["KeyZ"]){
+                mat4.translate(
+                    this.transMatrix,
+                    this.transMatrix,
+                    [0,0,-tran_vel * delta_t]
+                )
+            }
         }
         mat4.mul(this.rotMatrix, temp_mat, this.rotMatrix);
-        let modelViewMatrix = mat4.create();
-        mat4.mul(modelViewMatrix, this.transMatrix, this.rotMatrix);
-        // Tell WebGL how to pull out the positions from the position
-        // buffer into the vertexPosition attribute.
-        setPositionAttribute(gl, buffers, programInfo);
+        mat4.mul(this.modelViewMatrix, this.transMatrix, this.rotMatrix);
+    }
+
+    drawScene(){
+        let gl = this.gl;
+        let delta_t = Math.max(0.2, this.delta_t / 1000);
+        this.update_viewpoint(delta_t);
+
+        gl.clearColor(1.0, 1.0, 1.0, 1.0); // Clear to white, fully opaque
+        gl.clearDepth(1.0); // Clear everything
+        gl.enable(gl.DEPTH_TEST); // Enable depth testing
+        gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+
+        // Clear the canvas before we start drawing on it.
+
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        for (let obj of this.objs){
+            // Tell WebGL how to pull out the positions from the position
+            // buffer into the vertexPosition attribute.
+            setPositionAttribute(gl, obj.buffers, this.programInfo);
     
-        setColorAttribute(gl, buffers, programInfo);
-    
-        // Tell WebGL which indices to use to index the vertices
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
-    
-        // Tell WebGL to use our program when drawing
-        gl.useProgram(programInfo.program);
-    
-        // Set the shader uniforms
-        gl.uniformMatrix4fv(
-            programInfo.uniformLocations.projectionMatrix,
-            false,
-            this.projectionMatrix
-        );
-        gl.uniformMatrix4fv(
-            programInfo.uniformLocations.modelViewMatrix,
-            false,
-            modelViewMatrix
-        );
-    
-        {
-            const vertexCount = 36;
-            const type = gl.UNSIGNED_SHORT;
-            const offset = 0;
-            gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+            setColorAttribute(gl, obj.buffers, this.programInfo);
+        
+            // Tell WebGL which indices to use to index the vertices
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, obj.buffers.indices);
+        
+            // Tell WebGL to use our program when drawing
+            gl.useProgram(this.programInfo.program);
+        
+            // Set the shader uniforms
+            gl.uniformMatrix4fv(
+                this.programInfo.uniformLocations.projectionMatrix,
+                false,
+                this.projectionMatrix
+            );
+            gl.uniformMatrix4fv(
+                this.programInfo.uniformLocations.modelViewMatrix,
+                false,
+                this.modelViewMatrix
+            );
+            gl.uniformMatrix4fv(
+                this.programInfo.uniformLocations.objectMatrix,
+                false,
+                obj.get_trans(this.total_t)
+            );
+        
+            gl.drawElements(
+                gl.TRIANGLES,
+                obj.faces.length * 3,
+                gl.UNSIGNED_SHORT,
+                0
+            );
         }
     }
 }
@@ -228,78 +378,6 @@ function loadShader(gl, type, source) {
   }
 
   return shader;
-}
-
-function initBuffers(gl) {
-    const positionBuffer = initPositionBuffer(gl);
-
-    const colorBuffer = initColorBuffer(gl);
-
-    const indexBuffer = initIndexBuffer(gl);
-
-    return {
-        position: positionBuffer,
-        color: colorBuffer,
-        indices: indexBuffer,
-    };
-}
-
-function initIndexBuffer(gl) {
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-
-    // This array defines each face as two triangles, using the
-    // indices into the vertex array to specify each triangle's
-    // position.
-
-    const indices = [
-        0,
-        1,
-        2,
-        0,
-        2,
-        3, // front
-        4,
-        5,
-        6,
-        4,
-        6,
-        7, // back
-        8,
-        9,
-        10,
-        8,
-        10,
-        11, // top
-        12,
-        13,
-        14,
-        12,
-        14,
-        15, // bottom
-        16,
-        17,
-        18,
-        16,
-        18,
-        19, // right
-        20,
-        21,
-        22,
-        20,
-        22,
-        23, // left
-    ];
-
-    // Now send the element array to GL
-
-    gl.bufferData(
-        gl.ELEMENT_ARRAY_BUFFER,
-        new Uint16Array(indices),
-        gl.STATIC_DRAW
-    );
-
-    return indexBuffer;
 }
 
 function setPositionAttribute(gl, buffers, programInfo) {

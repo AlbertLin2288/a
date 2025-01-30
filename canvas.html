@@ -32,7 +32,7 @@
     <div id="main">
         <canvas id="my_canvas" width="256" height="256"></canvas>
         <div id="btn_div">
-            <button onclick="main.reset();">reset</button>
+            <button onclick="scene.reset();">reset</button>
         </div>
     </div>
     <script defer>
@@ -51,7 +51,7 @@
             document.body.appendChild(se);
             return new Promise((resolve) => {
                 se.onload = () => {
-                    main.start();
+                    main();
                     resolve();
                 };
             });
@@ -63,6 +63,7 @@
         crossorigin="anonymous"
         defer>
     </script>
+    <script src="obj_class.js" defer></script>
     <script src="func1.js" defer></script>
 </body>
 </html>
