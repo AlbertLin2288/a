@@ -6,17 +6,19 @@ const /** color of bond */BC = [0.7, 0.7, 0.7, 1];
 const /** radius of hydrogen atom */HR = 0.7;
 const /** radius of leaving group */LR = 1;
 const /** radius of nucleophile */NR = 1;
-const /** length of phase */P1 = 1000, P2 = 1500, P3 = 2500;
+const /** length of phase */P0 = 0, P1 = 1000, P2 = 2000, P3 = 2500, P4 = 3500, P5 = 4500;
 
 
 const BA = PI/2-Math.acos(1/3);
 function get_ang(t){
     if (t <= P1){
-        ang = BA*(1-(t-0)/(P1-0));
-    } else if (t<=P2){
-        ang = 0;
+        ang = BA;
+    } else if (t <= P2){
+        ang = BA*(1-(t-P1)/(P2-P1));
     } else if (t<=P3){
-        ang = -BA*(t-P2)/(P3-P2);
+        ang = 0;
+    } else if (t<=P4){
+        ang = -BA*(t-P3)/(P4-P3);
     } else {
         ang = -BA;
     }
@@ -100,13 +102,45 @@ function main(){
     // leaving group
     scene.add_obj(new obj_sphere(LR, [1,0,0,1], gl, 40, 30, (t) => {
         let tm1 = mat4.create();
+        if (t <= P3){
+            mat4.fromTranslation(tm1, [0, 0, BL]);
+        } else if (t <= P5){
+            mat4.fromTranslation(tm1, [0, 0, BL+3*BL*(t-P3)/(P5-P3)]);
+        } else {
+            mat4.fromTranslation(tm1, [0, 0, BL*4]);
+        }
+        return tm1;
+    }));
+    // bond
+    scene.add_obj(new obj_cylinder(BR, BL, 30, BC, gl, (t) => {
+        let tm1 = mat4.create();
+        if (t <= P3){
+            mat4.fromTranslation(tm1, [0, 0, BL/2]);
+        } else {
+            mat4.fromTranslation(tm1, [0, 0, BL*Infinity]);
+        }
         return tm1;
     }));
     // nuclophile
     scene.add_obj(new obj_sphere(NR, [1,0,0,1], gl, 40, 30, (t) => {
         let tm1 = mat4.create();
+        if (t <= P2){
+            mat4.fromTranslation(tm1, [0, 0, -BL-3*BL*(1-(t-P0)/(P2-P0))]);
+        } else {
+            mat4.fromTranslation(tm1, [0, 0, -BL]);
+        }
         return tm1;
     }));
-    scene.restart();
+    // bond
+    scene.add_obj(new obj_cylinder(BR, BL, 30, BC, gl, (t) => {
+        let tm1 = mat4.create();
+        if (t <= P2){
+            mat4.fromTranslation(tm1, [0, 0, -Infinity]);
+        } else {
+            mat4.fromTranslation(tm1, [0, 0, -BL/2]);
+        }
+        return tm1;
+    }));
+    scene.reset();
     scene.start();
 }

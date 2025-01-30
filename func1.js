@@ -26,7 +26,8 @@ class Scene {
             }
         });
 
-        this.restart();
+        this.total_t = 0;
+        this.reset();
     }
 
     /**
@@ -165,11 +166,11 @@ class Scene {
     }
 
     /**
-     * init/reset animation and viewpoint
+     * init/reset animation
      */
     restart(){
-        this.reset();
         this.total_t = 0;
+        this.paused = true;
     }
 
     /**
