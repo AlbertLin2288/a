@@ -203,7 +203,7 @@ class Scene {
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
-                    -Math.PI * rot_vel * delta_t,
+                    Math.PI * rot_vel * delta_t,
                     [1,0,0]
                 )
             }
@@ -211,23 +211,15 @@ class Scene {
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
-                    Math.PI * rot_vel * delta_t,
+                    -Math.PI * rot_vel * delta_t,
                     [1,0,0]
                 )
             }
-            if (window.pressedKeys["KeyA"]){
+            if (window.pressedKeys["KeyZ"]){
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
                     -Math.PI * rot_vel * delta_t,
-                    [0,1,0]
-                )
-            }
-            if (window.pressedKeys["KeyD"]){
-                mat4.rotate(
-                    temp_mat,
-                    temp_mat,
-                    Math.PI * rot_vel * delta_t,
                     [0,1,0]
                 )
             }
@@ -235,11 +227,19 @@ class Scene {
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
+                    Math.PI * rot_vel * delta_t,
+                    [0,1,0]
+                )
+            }
+            if (window.pressedKeys["KeyD"]){
+                mat4.rotate(
+                    temp_mat,
+                    temp_mat,
                     -Math.PI * rot_vel * delta_t,
                     [0,0,1]
                 )
             }
-            if (window.pressedKeys["KeyZ"]){
+            if (window.pressedKeys["KeyA"]){
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
@@ -249,14 +249,14 @@ class Scene {
             }
         } else {
             // moving
-            if (window.pressedKeys["KeyW"]){
+            if (window.pressedKeys["ArrowDown"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
                     [0,tran_vel * delta_t,0]
                 )
             }
-            if (window.pressedKeys["KeyS"]){
+            if (window.pressedKeys["ArrowUp"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
@@ -277,14 +277,14 @@ class Scene {
                     [tran_vel * delta_t,0,0]
                 )
             }
-            if (window.pressedKeys["KeyC"]){
+            if (window.pressedKeys["KeyW"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
                     [0,0,tran_vel * delta_t]
                 )
             }
-            if (window.pressedKeys["KeyZ"]){
+            if (window.pressedKeys["KeyS"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,

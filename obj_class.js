@@ -16,7 +16,7 @@ class obj_3d {
         this.color = color
         this.gl = gl;
         this.get_trans = get_trans;
-        this.buffers = this.make_buffer();
+        this.make_buffer();
     }
 
     /**
@@ -53,7 +53,7 @@ class obj_3d {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ind_bf);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-        return {
+        this.buffers = {
             position: pos_bf,
             color: col_bf,
             indices: ind_bf
@@ -94,6 +94,83 @@ class obj_sphere extends obj_3d {
                 let p4 = p2 - c;
                 if (i == 1) p4 = 0;
                 faces.push([p1, p2, p4]);
+            }
+        }
+        super(vertex, faces, color, gl, get_trans);
+    }
+}
+
+class obj_rect extends obj_3d {
+    /**
+     * Origin at mid
+     * @param {Number} x 
+     * @param {Number} y 
+     * @param {Number} z 
+     * @param {Array<Number>} color 
+     * @param {WebGLRenderingContext} gl 
+     * @param {(Number)=>Float32Array} get_trans 
+     */
+    constructor(x, y, z, color, gl, get_trans) {
+        super(
+            [
+                [+x/2, +y/2, +z/2],
+                [+x/2, +y/2, -z/2],
+                [+x/2, -y/2, +z/2],
+                [+x/2, -y/2, -z/2],
+                [-x/2, +y/2, +z/2],
+                [-x/2, +y/2, -z/2],
+                [-x/2, -y/2, +z/2],
+                [-x/2, -y/2, -z/2]
+            ],
+            [
+                [0, 1, 2],
+                [3, 1, 2],
+                [4, 5, 6],
+                [7, 5, 6],
+                [0, 1, 4],
+                [5, 1, 4],
+                [2, 3, 6],
+                [7, 3, 6],
+                [0, 2, 4],
+                [6, 2, 4],
+                [1, 3, 5],
+                [7, 3, 5]
+            ],
+            color, gl, get_trans
+        );
+    }
+}
+
+class obj_cylinder extends obj_3d {
+    /**
+     * along z axis, origin in middle
+     * @param {Number} r 
+     * @param {Number} h 
+     * @param {Number} c number of slice
+     * @param {Array<Number>} color 
+     * @param {WebGLRenderingContext} gl 
+     * @param {(Number)=>Float32Array} get_trans 
+     */
+    constructor(r, h, c, color, gl, get_trans){
+        let vertex = [], faces = [];
+        for (let i=0;i<c;i++){
+            vertex.push([r*Math.sin(PI*2*i/c), r*Math.cos(PI*2*i/c), -h/2]);
+            vertex.push([r*Math.sin(PI*(2*i+1)/c), r*Math.cos(PI*(2*i+1)/c), h/2]);
+            let p1 = i*2;
+            let p2 = p1 + 1;
+            let p3 = p1 + 2;
+            if (p3 >= c*2){
+                p3 -= c*2;
+            }
+            let p4 = p1 - 1;
+            if (p4 < 0){
+                p4 += c*2;
+            }
+            faces.push([p1, p2, p3]);
+            faces.push([p1, p2, p4]);
+            if (i>1){
+                faces.push([0, i*2-2, i*2]);
+                faces.push([1, i*2-1, i*2+1]);
             }
         }
         super(vertex, faces, color, gl, get_trans);
