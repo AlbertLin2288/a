@@ -3,6 +3,7 @@ window.onkeyup = (e) => {window.pressedKeys[e.code] = false;};
 window.onkeydown = (e) => {window.pressedKeys[e.code] = true;};
 
 
+
 class Scene {
     /**
      * @param {WebGLRenderingContext} gl gl
@@ -203,7 +204,7 @@ class Scene {
      */
     update_viewpoint(delta_t) {
         // viewing
-        let rot_vel = 0.05, tran_vel = 0.2
+        let rot_vel = 0.05, tran_vel = 0.35
         rot_vel *= Math.exp(this.mul);
         tran_vel *= Math.exp(this.mul);
         // Move the view matrix base on key
@@ -214,7 +215,7 @@ class Scene {
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
-                    Math.PI * rot_vel * delta_t,
+                    Math.PI * rot_vel * delta_t * window.inverse["ws_rot"],
                     [1,0,0]
                 )
             }
@@ -222,7 +223,7 @@ class Scene {
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
-                    -Math.PI * rot_vel * delta_t,
+                    -Math.PI * rot_vel * delta_t * window.inverse["ws_rot"],
                     [1,0,0]
                 )
             }
@@ -230,7 +231,7 @@ class Scene {
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
-                    -Math.PI * rot_vel * delta_t,
+                    -Math.PI * rot_vel * delta_t * window.inverse["cz_rot"],
                     [0,1,0]
                 )
             }
@@ -238,7 +239,7 @@ class Scene {
                 mat4.rotate(
                     temp_mat,
                     temp_mat,
-                    Math.PI * rot_vel * delta_t,
+                    Math.PI * rot_vel * delta_t * window.inverse["cz_rot"],
                     [0,1,0]
                 )
             }
@@ -264,42 +265,42 @@ class Scene {
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
-                    [0,tran_vel * delta_t,0]
+                    [0, tran_vel * delta_t * window.inverse["updown_tran"], 0]
                 )
             }
             if (window.pressedKeys["ArrowUp"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
-                    [0,-tran_vel * delta_t,0]
+                    [0, -tran_vel * delta_t * window.inverse["updown_tran"], 0]
                 )
             }
             if (window.pressedKeys["KeyA"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
-                    [-tran_vel * delta_t,0,0]
+                    [-tran_vel * delta_t * window.inverse["ad_tran"], 0, 0]
                 )
             }
             if (window.pressedKeys["KeyD"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
-                    [tran_vel * delta_t,0,0]
+                    [tran_vel * delta_t * window.inverse["ad_tran"], 0, 0]
                 )
             }
             if (window.pressedKeys["KeyW"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
-                    [0,0,tran_vel * delta_t]
+                    [0,0,tran_vel * delta_t * window.inverse["ws_tran"]]
                 )
             }
             if (window.pressedKeys["KeyS"]){
                 mat4.translate(
                     this.transMatrix,
                     this.transMatrix,
-                    [0,0,-tran_vel * delta_t]
+                    [0,0,-tran_vel * delta_t * window.inverse["ws_tran"]]
                 )
             }
         }

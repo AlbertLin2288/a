@@ -1,5 +1,13 @@
 var cur = 0;
 var elms = [];
+var models;
+var inverse = {
+    ws_rot: 1,
+    cz_rot: 1,
+    ws_tran: 1,
+    ad_tran: 1,
+    updown_tran: 1
+};
 
 function switch_img(i){
     i = Number(i);
@@ -13,6 +21,7 @@ function switch_img(i){
     elms[i].focus();
     elms[i].contentWindow.scene.start();
     cur = i;
+    document.getElementById("model_name").innerHTML = models[cur];
 }
 
 function my_key_event(code){
@@ -31,7 +40,7 @@ window.onload = async () => {
     if (!res.ok){
         alert("Unable to open model list");
     }
-    const models = (await res.text()).split("\n");
+    models = (await res.text()).split("\n");
 
     let main_div = document.getElementById("main");
     for (let i in models){
@@ -42,6 +51,7 @@ window.onload = async () => {
         frame.classList.add("my_iframe");
         main_div.appendChild(frame);
         elms.push(frame);
+        frame.contentWindow.inverse = inverse;
         frame.addEventListener("load", () => {
             frame.contentWindow.init_frame(
                 window.innerWidth,
@@ -55,6 +65,7 @@ window.onload = async () => {
                         frame.contentWindow.scene.stop();
                     } else {
                         frame.focus()
+                        document.getElementById("model_name").innerHTML = models[cur];
                     }
                 });
             });
@@ -69,6 +80,12 @@ window.onload = async () => {
         btn.classList.add("choice_btn");
         btn.onclick = () => {switch_img(i);};
         document.getElementById("choice_div").appendChild(btn);
+    }
+    for (let elm of document.getElementsByTagName("button")){
+        elm.addEventListener("click", (e) => {
+            e.currentTarget.blur();
+            elms[cur].focus();
+        });
     }
     document.addEventListener("keydown", (e) => {
         e.preventDefault();

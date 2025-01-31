@@ -2,33 +2,23 @@
 <head>
     <meta charset="UTF-8">
     <title>title</title>
-    <style>
-        iframe {
-            border: solid grey;
-            border-width: 3px;
-        }
-
-        #main {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #choice_div {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-        }
-        .choice_btn {
-            margin: 10px 10px 0px 10px;
-            width: 5ch;
-        }
-    </style>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div style="display: flex;flex-direction: column;justify-items: center;">
-        <div id="main">
+    <div id="root">
+        <div id="left">
+            <button onclick="inverse['ws_rot']*=-1;">ws rot</button>
+            <button onclick="inverse['cz_rot']*=-1;">cz rot</button>
+            <button onclick="inverse['ws_tran']*=-1;">ws tran</button>
+            <button onclick="inverse['cz_tran']*=-1;">cz tran</button>
+            <button onclick="inverse['updown_tran']*=-1;">up down tran</button>
+            <label id="model_name"></label>
         </div>
-        <div id="choice_div">
+        <div id="right">
+            <div id="main">
+            </div>
+            <div id="choice_div">
+            </div>
         </div>
     </div>
     <script src="index.js"></script>
