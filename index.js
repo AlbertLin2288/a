@@ -78,7 +78,7 @@ async function load_model(model_source){
             ).then((res) => {
                 frame.width = res.w;
                 frame.height = res.h;
-                frame.contentWindow.set_script(model + ".js").then((res) => {
+                frame.contentWindow.set_script(model).then((res) => {
                     if (i != cur){
                         frame.style.display = "none";
                         frame.contentWindow.scene.stop();

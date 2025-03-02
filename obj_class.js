@@ -1,4 +1,44 @@
 const PI = Math.PI;
+class mat_func {
+    constructor(param){
+        if (param instanceof Function){
+            this.t = 0;
+            this.f = param;
+        } else if (param instanceof mat_func){
+            this.t = 0;
+            this.f = param.call;
+        } else if (param instanceof Array) {
+            this.t = 1;
+            // rot: 0,rad,ax
+            // tran: 1,vec
+            this.mat = mat4.create();
+            let mt2 = mat4.create();
+            for (let m of param){
+                if (m[0]==0){
+                    mat4.fromRotation(mt2, m[1], m[2]);
+                } else if (m[0]==1){
+                    mat4.fromTranslation(mt2, m[1]);
+                } else {
+                    mat4.identity(mt2);
+                }
+                mat4.mul(this.mat,mt2,this.mat);
+            }
+        } else {
+            this.t = -1;
+        }
+    }
+
+    call(t){
+        switch (this.t) {
+            case 0:
+                return this.f(t);
+            case 1:
+                return mat4.clone(this.mat);
+            default:
+                return mat4.create();
+        }
+    }
+}
 
 class obj_3d {
     /**
@@ -15,18 +55,8 @@ class obj_3d {
         this.faces = faces;
         this.color = color
         this.gl = gl;
-        this.get_trans = get_trans;
+        this.get_trans = new mat_func(get_trans);
         this.make_buffer();
-    }
-
-    /**
-     * get the transformation as a function of time  
-     * placeholder
-     * @param {Number} t 
-     */
-    static _get_trans(t){
-        let tm = mat4.create();
-        return tm;
     }
 
     get(){
@@ -62,44 +92,6 @@ class obj_3d {
             color: col_bf,
             indices: ind_bf
         };
-    }
-}
-
-class mat_func {
-    constructor(param){
-        if (param instanceof Function){
-            this.t = 0;
-            this.f = param;
-        } else if (param instanceof Array) {
-            this.t = 1;
-            // rot: 0,rad,ax
-            // tran: 1,vec
-            this.mat = mat4.create();
-            let mt2 = mat4.create();
-            for (let m of param){
-                if (m[0]==0){
-                    mat4.fromRotation(mt2, m[1], m[2]);
-                } else if (m[0]==1){
-                    mat4.fromTranslation(mt2, m[1]);
-                } else {
-                    mat4.identity(mt2);
-                }
-                mat4.mul(this.mat,mt2,this.mat);
-            }
-        } else {
-            this.t = -1;
-        }
-    }
-
-    call(t){
-        switch (this.t) {
-            case 0:
-                return this.f(t);
-            case 1:
-                return this.mat;
-            default:
-                return mat4.create();
-        }
     }
 }
 

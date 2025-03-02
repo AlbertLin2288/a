@@ -351,7 +351,7 @@ class Scene {
             gl.uniformMatrix4fv(
                 this.programInfo.uniformLocations.objectMatrix,
                 false,
-                obj.get_trans(this.total_t)
+                obj.get_trans.call(this.total_t)
             );
         
             gl.drawElements(

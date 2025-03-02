@@ -26,14 +26,25 @@
             width: 256px;
             height: 256px;
         }
+
+        #bottom {
+            width: 80%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body>
     <div id="main">
         <canvas id="my_canvas" width="256" height="256"></canvas>
-        <div id="btn_div">
-            <button onclick="scene.restart();this.blur();">reset</button>
-            <button onclick="scene.reset();this.blur();">home</button>
+        <div id="bottom">
+            <div></div>
+            <div id="btn_div">
+                <button onclick="scene.restart();this.blur();">reset</button>
+                <button onclick="scene.reset();this.blur();">home</button>
+            </div>
+            <label id="name"></label>
         </div>
     </div>
     <script defer>
@@ -48,7 +59,8 @@
 
         function set_script(s){
             let se = document.createElement("script");
-            se.src = s;
+            se.src = s + ".js";
+            document.getElementById("name").innerHTML = s;
             document.body.appendChild(se);
             return new Promise((resolve) => {
                 se.onload = () => {
