@@ -36,12 +36,12 @@ function main(){
     const gl = canvas.getContext("webgl")
     scene = new Scene(gl, [], [0.3, 0.3, 0.3, 1], 30);
     // center carbon
-    scene.add_obj(new obj_sphere(CR, [0,0,0,1], gl, 40, 30, (t) => {
+    scene.add_obj(new obj_sphere(CR, [0,0,0,1], 40, 30, gl, (t) => {
         let tm1 = mat4.create();
         return tm1;
     }));
     // hydrogen
-    scene.add_obj(new obj_sphere(HR, [1,1,1,1], gl, 40, 30, (t) => {
+    scene.add_obj(new obj_sphere(HR, [1,1,1,1], 40, 30, gl, (t) => {
         let tm1 = mat4.create();
         mat4.fromTranslation(tm1, [BL, 0, 0]);
         let tm2 = mat4.create();
@@ -50,7 +50,7 @@ function main(){
         mat4.mul(tm2, tm2, tm1);
         return tm2;
     }));
-    scene.add_obj(new obj_sphere(HR, [1,1,1,1], gl, 40, 30, (t) => {
+    scene.add_obj(new obj_sphere(HR, [1,1,1,1], 40, 30, gl, (t) => {
         let tm1 = mat4.create();
         mat4.fromTranslation(tm1, [BL, 0, 0]);
         let tm2 = mat4.create();
@@ -59,7 +59,7 @@ function main(){
         mat4.mul(tm2, tm2, tm1);
         return tm2;
     }));
-    scene.add_obj(new obj_sphere(HR, [1,1,1,1], gl, 40, 30, (t) => {
+    scene.add_obj(new obj_sphere(HR, [1,1,1,1], 40, 30, gl, (t) => {
         let tm1 = mat4.create();
         mat4.fromTranslation(tm1, [BL, 0, 0]);
         let tm2 = mat4.create();
@@ -100,7 +100,7 @@ function main(){
         return tm2;
     }));
     // leaving group
-    scene.add_obj(new obj_sphere(LR, [1,0,0,1], gl, 40, 30, (t) => {
+    scene.add_obj(new obj_sphere(LR, [0,0.31,0,1], 40, 30, gl, (t) => {
         let tm1 = mat4.create();
         if (t <= P3){
             mat4.fromTranslation(tm1, [0, 0, BL]);
@@ -122,13 +122,41 @@ function main(){
         return tm1;
     }));
     // nuclophile
-    scene.add_obj(new obj_sphere(NR, [1,0,0,1], gl, 40, 30, (t) => {
+    scene.add_obj(new obj_sphere(NR, [1,0,0,1], 40, 30, gl, (t) => {
         let tm1 = mat4.create();
         if (t <= P2){
             mat4.fromTranslation(tm1, [0, 0, -BL-3*BL*(1-(t-P0)/(P2-P0))]);
         } else {
             mat4.fromTranslation(tm1, [0, 0, -BL]);
         }
+        return tm1;
+    }));
+    scene.add_obj(new obj_sphere(HR, [1,1,1,1], 40, 30, gl, (t) => {
+        let tm1 = mat4.create();
+        if (t <= P2){
+            mat4.fromTranslation(tm1, [0, 0, -BL-3*BL*(1-(t-P0)/(P2-P0))]);
+        } else {
+            mat4.fromTranslation(tm1, [0, 0, -BL]);
+        }
+        let tm2 = mat4.create();
+        mat4.fromRotation(tm2, 1.257, [1, 0, 0]);
+        mat4.mul(tm1, tm1, tm2);
+        mat4.fromTranslation(tm2, [0, 0, -BL]);
+        mat4.mul(tm1, tm1, tm2);
+        return tm1;
+    }));
+    scene.add_obj(new obj_cylinder(BR, BL, 30, BC, gl, (t) => {
+        let tm1 = mat4.create();
+        if (t <= P2){
+            mat4.fromTranslation(tm1, [0, 0, -BL-3*BL*(1-(t-P0)/(P2-P0))]);
+        } else {
+            mat4.fromTranslation(tm1, [0, 0, -BL]);
+        }
+        let tm2 = mat4.create();
+        mat4.fromRotation(tm2, 1.257, [1, 0, 0]);
+        mat4.mul(tm1, tm1, tm2);
+        mat4.fromTranslation(tm2, [0, 0, -BL*0.5]);
+        mat4.mul(tm1, tm1, tm2);
         return tm1;
     }));
     // bond

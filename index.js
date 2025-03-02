@@ -27,22 +27,41 @@ function switch_img(i){
 function my_key_event(code){
     if (code == "ArrowRight"){
         switch_img(cur+1);
-    } else if (code == "ArrowLeft"){
+        return true;
+    }
+    if (code == "ArrowLeft"){
         switch_img(cur-1);
-    } else if (code == "Space"){
+        return true;
+    }
+    if (code == "Space"){
         elms[cur].contentWindow.scene.toggle_pause();
+        return true;
     }
 }
 
-window.onload = async () => {
-    // load model list
-    const res = await fetch("./model_list.txt");
+/**
+* load model list
+*/
+async function load_model(model_source){
+    const res = await fetch(model_source);
     if (!res.ok){
         alert("Unable to open model list");
+        return;
     }
     models = (await res.text()).split("\n");
+    cur = 0;
+    elms = [];
 
     let main_div = document.getElementById("main");
+
+    for (let elm of main_div.children){
+        elm.remove();
+    }
+
+    for (let elm of document.getElementById("choice_div").children){
+        elm.remove();
+    }
+
     for (let i in models){
         let model = models[i];
         let frame = document.createElement("iframe");
@@ -87,8 +106,15 @@ window.onload = async () => {
             elms[cur].focus();
         });
     }
-    document.addEventListener("keydown", (e) => {
-        e.preventDefault();
-        my_key_event(e.code);
+}
+
+window.onload = async () => {
+    load_model("./model_list.txt");
+    document.getElementById("model_name").addEventListener("keydown", (e) => {
+        e.stopPropagation();
+    });
+    document.body.addEventListener("keydown", (e) => {
+        if (my_key_event(e.code))
+            e.preventDefault();
     });
 };

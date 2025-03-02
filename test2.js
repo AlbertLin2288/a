@@ -3,7 +3,7 @@ function main(){
     const canvas = document.getElementById("my_canvas");
     const gl = canvas.getContext("webgl")
     scene = new Scene(gl);
-    scene.add_obj(new obj_sphere(1, [0,0,1,1], gl, 40, 30, (t) => {
+    scene.add_obj(new obj_sphere(1, [0,0,1,1], 40, 30, gl, (t) => {
         let tm1 = mat4.create();
         mat4.translate(tm1, tm1, [0, 0, 3]);
         return tm1;

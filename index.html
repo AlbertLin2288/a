@@ -12,6 +12,8 @@
             <button onclick="inverse['ws_tran']*=-1;">ws tran</button>
             <button onclick="inverse['cz_tran']*=-1;">cz tran</button>
             <button onclick="inverse['updown_tran']*=-1;">up down tran</button>
+            <input type="text" id="model_name" value="./model_list.txt"/>
+            <button onclick="load_model(document.getElementById('model_name').value);">change</button>
             <label id="model_name"></label>
         </div>
         <div id="right">

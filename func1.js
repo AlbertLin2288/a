@@ -35,8 +35,10 @@ class Scene {
      * add an obj to the scene
      * @param {obj_3d} obj 
      */
-    add_obj(obj){
-        this.objs.push(obj);
+    add_obj(objs){
+        for (let obj of objs.get()){
+            this.objs.push(obj);
+        }
     }
 
     /**

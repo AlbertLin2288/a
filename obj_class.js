@@ -29,6 +29,10 @@ class obj_3d {
         return tm;
     }
 
+    get(){
+        return [this];
+    }
+
     /**
      * only need to be called once, don't know why I added this
      */
@@ -61,6 +65,109 @@ class obj_3d {
     }
 }
 
+class mat_func {
+    constructor(param){
+        if (param instanceof Function){
+            this.t = 0;
+            this.f = param;
+        } else if (param instanceof Array) {
+            this.t = 1;
+            // rot: 0,rad,ax
+            // tran: 1,vec
+            this.mat = mat4.create();
+            let mt2 = mat4.create();
+            for (let m of param){
+                if (m[0]==0){
+                    mat4.fromRotation(mt2, m[1], m[2]);
+                } else if (m[0]==1){
+                    mat4.fromTranslation(mt2, m[1]);
+                } else {
+                    mat4.identity(mt2);
+                }
+                mat4.mul(this.mat,mt2,this.mat);
+            }
+        } else {
+            this.t = -1;
+        }
+    }
+
+    call(t){
+        switch (this.t) {
+            case 0:
+                return this.f(t);
+            case 1:
+                return this.mat;
+            default:
+                return mat4.create();
+        }
+    }
+}
+
+class obj_group {
+    /**
+     * to group objects together  
+     * obj_list format: [[obj_class, [args], [mat_func_args]]]  
+     * or [obj_group, mat_func_args]
+     * @param {WebGLRenderingContext} gl 
+     * @param {Array} obj_list 
+     */
+    constructor(gl, obj_list){
+        this.gl = gl;
+        for (let i in obj_list){
+            let id = obj_list[i].length -1;
+            obj_list[i][id] = new mat_func(obj_list[i][id]);
+        }
+        this.obj_list = obj_list;
+    }
+
+    /**
+     * mat_func_args
+     * @param {Array} param 
+     */
+    make(param){
+        let objs = [];
+        let mf = new mat_func(param);
+        for (let obj_info of this.obj_list){
+            if (obj_info[0] instanceof obj_group){
+                objs.push(obj_info[0].make((t) => {
+                    let mt = mf.call(t);
+                    mat4.mul(mt, mt, obj_info[1].call(t));
+                    return mt;
+                }))
+            } else {
+                objs.push(new obj_info[0](...(obj_info[1]), this.gl, (t) => {
+                    let mt = mf.call(t);
+                    mat4.mul(mt, mt, obj_info[2].call(t));
+                    return mt;
+                }));
+            }
+        }
+        return new obj_group_inst(objs);
+    }
+}
+
+class obj_group_inst {
+    /**
+     * list of objs
+     * @param {Array<obj_3d>} objs 
+     */
+    constructor(objs){
+        this.objs = [];
+        for (let objs2 of objs){
+            for (let obj of objs2.get()){
+                this.objs.push(obj);
+            }
+        }
+    }
+
+    get(){
+        return this.objs;
+    }
+}
+
+/**
+ * radius, color, layer_count, slice_count
+ */
 class obj_sphere extends obj_3d {
     /**
      * Sphere
@@ -71,7 +178,7 @@ class obj_sphere extends obj_3d {
      * @param {Number} c slices
      * @param {(Number) => Float32Array} [get_trans=null] trans function
      */
-    constructor(r, color, gl, h, c, get_trans){
+    constructor(r, color, h, c, gl, get_trans){
         let vertex = [[0,0,r]], faces = [];
         for (let i=1;i<h;i++){
             let z = r * Math.cos(PI*i/h);
@@ -100,6 +207,9 @@ class obj_sphere extends obj_3d {
     }
 }
 
+/**
+ * x, y, z, color
+ */
 class obj_rect extends obj_3d {
     /**
      * Origin at mid
@@ -141,6 +251,9 @@ class obj_rect extends obj_3d {
     }
 }
 
+/**
+ * radius, height, slice_count, color
+ */
 class obj_cylinder extends obj_3d {
     /**
      * along z axis, origin in middle
